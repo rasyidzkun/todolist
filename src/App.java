@@ -124,7 +124,7 @@ public class App {
             FileWriter fileWriter = new FileWriter(filename, true); // true = append the file
             fileWriter.append(String.format("%s%n", newTodoList));
             fileWriter.close();
-            System.out.println("Berhasil ditambahlan");
+            System.out.println("Berhasil ditambahkan");
         } catch(Exception e) {
             System.out.println(e);
         } 
