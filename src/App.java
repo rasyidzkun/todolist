@@ -9,6 +9,9 @@ public class App {
     static ArrayList<String> todolists;
     static boolean isEditing = false;
     static Scanner input;
+    static final String ANSI_RED = "\u001B[31m";
+    static final String ANSI_GREEN = "\u001B[32m";
+    static final String ANSI_WHITE = "\u001B[37m";
 
     public static void main(String[] args) throws Exception {
         todolists = new ArrayList<>();
@@ -66,7 +69,7 @@ public class App {
         } else if(selectedMenu.equals("0")) {
             System.exit(0);
         } else {
-            System.out.println("Salah pilih menu");
+            System.out.println(ANSI_RED + "Salah pilih menu" + ANSI_WHITE);
             backToMenu();
         }
     }
@@ -105,7 +108,7 @@ public class App {
                 index++;
             }
         }else {
-            System.out.println("Tidak ada data!");
+            System.out.println(ANSI_RED + "Tidak ada data!" + ANSI_WHITE);
         }
 
         if(!isEditing) {
@@ -124,7 +127,7 @@ public class App {
             FileWriter fileWriter = new FileWriter(filename, true); // true = append the file
             fileWriter.append(String.format("%s%n", newTodoList));
             fileWriter.close();
-            System.out.println("Berhasil ditambahkan");
+            System.out.println(ANSI_GREEN + "Berhasil ditambahkan" + ANSI_WHITE);
         } catch(Exception e) {
             System.out.println(e);
         } 
@@ -142,7 +145,7 @@ public class App {
             int index = Integer.parseInt(input.nextLine());
 
             if(index > todolists.size()) {
-                throw new IndexOutOfBoundsException("Kamu memasukkan data yang salah");
+                throw new IndexOutOfBoundsException(ANSI_RED + "Kamu memasukkan data yang salah" + ANSI_WHITE);
             }else {
                 System.out.println("Data baru: ");
                 String newData = input.nextLine();
@@ -156,7 +159,7 @@ public class App {
                         fileWriter.append(String.format("%s%n", data));
                     }
                     fileWriter.close();
-                    System.out.println("Berhasil diubah");
+                    System.out.println(ANSI_GREEN + "Berhasil diubah" + ANSI_WHITE);
 
                 }catch(Exception e) {
                     System.out.println(e);
@@ -200,7 +203,7 @@ public class App {
                     }
                     fileWriter.close();
 
-                    System.out.println("Berhasil dihapus");
+                    System.out.println(ANSI_GREEN + "Berhasil dihapus" + ANSI_WHITE);
 
                 }catch(Exception e) {
                     System.out.println(e);
@@ -214,5 +217,4 @@ public class App {
         isEditing = false;
         backToMenu();
     }
-
 }
