@@ -1,14 +1,22 @@
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.io.IOException;
+import java.util.InputMismatchException;
 
 public class App {
     static String filename;
+    static String completed;
+    static String date;
+    static String colorDate;
     static ArrayList<String> todolists;
+    static boolean isCompleted;
     static boolean isEditing = false;
     static Scanner input;
+
     static final String ANSI_RED = "\u001B[31m";
     static final String ANSI_GREEN = "\u001B[32m";
     static final String ANSI_WHITE = "\u001B[37m";
@@ -101,7 +109,7 @@ public class App {
         readTodoList();
 
         if(todolists.size() > 0) {
-            System.out.println("TODO LIST: ");
+            System.out.printf("%-27s%-17s%s%n","TODO LIST", "COMPLETED", "DATE CREATED");
             int index = 0;
             for(String data : todolists) {
                 System.out.println(String.format("[%d] %s", index, data));
@@ -119,13 +127,31 @@ public class App {
     static void addTodoList(){
         clearScreen();
 
-        System.out.println("Apa yang ingin kamu kerjakan? : ");
+        System.out.println("Apa yang ingin kamu kerjakan?");
         System.out.print("Jawab : ");
         String newTodoList = input.nextLine();
 
+        System.out.print("Status (Completed/Not Completed) : ");
+        completed = input.nextLine();
+
+        try {
+            if(!completed.equalsIgnoreCase("completed") && !completed.equalsIgnoreCase("not completed")) {
+                throw new InputMismatchException(ANSI_RED +"Masukkan string completed / not completed"+ ANSI_WHITE);
+            } if (completed.equalsIgnoreCase("completed")) {
+                isCompleted = true;
+            } else {
+                isCompleted = false;
+            }
+        }catch(Exception e) {
+            System.out.println(e);
+        }
+
+        date = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a").format(new Date());
+        colorDate = ANSI_GREEN + date + ANSI_WHITE;
+        
         try {
             FileWriter fileWriter = new FileWriter(filename, true); // true = append the file
-            fileWriter.append(String.format("%s%n", newTodoList));
+            fileWriter.append(String.format("%-25s%-10b%s%n", newTodoList, isCompleted, colorDate));
             fileWriter.close();
             System.out.println(ANSI_GREEN + "Berhasil ditambahkan" + ANSI_WHITE);
         } catch(Exception e) {
@@ -147,17 +173,35 @@ public class App {
             if(index > todolists.size()) {
                 throw new IndexOutOfBoundsException(ANSI_RED + "Kamu memasukkan data yang salah" + ANSI_WHITE);
             }else {
-                System.out.println("Data baru: ");
+                System.out.print("Data baru: ");
                 String newData = input.nextLine();
 
-                todolists.set(index, newData);
-                System.out.println(todolists.toString());
+                System.out.print("Status (Completed/Not Completed) : ");
+                completed = input.nextLine();
+
+                try {
+                    if(!completed.equalsIgnoreCase("completed") && !completed.equalsIgnoreCase("not completed")) {
+                        throw new InputMismatchException(ANSI_RED +"Masukkan string completed / not completed"+ ANSI_WHITE);
+                    } if (completed.equalsIgnoreCase("completed")) {
+                        isCompleted = true;
+                    } else {
+                        isCompleted = false;
+                    }
+                }catch(Exception e) {
+                    System.out.println(e);
+                }
+
+                date = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a").format(new Date());
+                colorDate = ANSI_GREEN + date + ANSI_WHITE;
+
+                todolists.set(index, newData); 
 
                 try {
                     FileWriter fileWriter = new FileWriter(filename, false); // false == overwrite the file
                     for(String data : todolists) {
-                        fileWriter.append(String.format("%s%n", data));
+                        fileWriter.append(String.format("%-25s%-10s%s%n", data, isCompleted, colorDate));
                     }
+                    
                     fileWriter.close();
                     System.out.println(ANSI_GREEN + "Berhasil diubah" + ANSI_WHITE);
 
@@ -165,7 +209,6 @@ public class App {
                     System.out.println(e);
                 }
             }
-
         }catch(Exception e) {
             System.out.println(e);
         }
