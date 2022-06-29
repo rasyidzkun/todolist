@@ -199,7 +199,7 @@ public class App {
                 try {
                     FileWriter fileWriter = new FileWriter(filename, false); // false == overwrite the file
                     for(String data : todolists) {
-                        fileWriter.append(String.format("%-25s%-10s%s%n", data, isCompleted, colorDate));
+                        fileWriter.append(String.format("%-25s%-10b%s%n", data, isCompleted, colorDate));
                     }
                     
                     fileWriter.close();
