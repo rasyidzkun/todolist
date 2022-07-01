@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class Main {
                     break;
                 case "2":
                     addTodoList();
+                    showTodoList();
                     break;
                 case "3":
                     editTodoList();
@@ -67,10 +69,11 @@ public class Main {
             bufferedInput = new BufferedReader(fileInput);
         } catch (Exception e) {
             redColor("Database tidak ditemukan");
+            addTodoList();
             return;
         }
 
-        System.out.printf("%-30s%-20s%s%n", "TODO LIST", "STATUS", "DATE CREATED");
+        System.out.printf("%n%-30s%-20s%s%n", "TODO LIST", "STATUS", "DATE CREATED");
         System.out.printf("%s%n", "--------------------------------------------------------------------------");
 
         String data = bufferedInput.readLine();
@@ -87,7 +90,7 @@ public class Main {
 
             data = bufferedInput.readLine();
         }
-        System.out.printf("%s%n", "--------------------------------------------------------------------------");
+        System.out.printf("%s%n%n", "--------------------------------------------------------------------------");
     }
 
     static void addTodoList() throws IOException {
@@ -101,14 +104,14 @@ public class Main {
         String date = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a").format(new Date());
         String colorDate = ANSI_GREEN + date + ANSI_WHITE;
 
-        System.out.print("Completed (y/n) : ");
+        System.out.print("Completed (y/n) ? : ");
         String completed = input.next();
 
         String isCompleted = "";
         try {
             while (!completed.equalsIgnoreCase("y") && !completed.equalsIgnoreCase("n")) {
                 redColor("Masukkan (y/n) ");
-                System.out.print("Completed (y/n) : ");
+                System.out.print("Completed (y/n) ? : ");
                 completed = input.next();
             }
 
@@ -130,7 +133,71 @@ public class Main {
     static void editTodoList() {
     }
 
-    static void deleteTodoList() {
+    static void deleteTodoList() throws IOException {
+        File todo = new File("todolist.txt");
+        FileReader fileInput = new FileReader(todo);
+        BufferedReader bufferedInput = new BufferedReader(fileInput);
+
+        File temp = new File("tempTodo.txt");
+        FileWriter fileOutput = new FileWriter(temp);
+        BufferedWriter bufferedOutput = new BufferedWriter(fileOutput);
+
+        showTodoList();
+
+        System.out.println("Masukkan index yang akan dihapus");
+        System.out.print("Jawab : ");
+        int deleteIndex = input.nextInt();
+
+        boolean isFound = false;
+        int index = 0;
+
+        String data = bufferedInput.readLine();
+
+        while (data != null) {
+            index++;
+            boolean isDelete = false;
+
+            StringTokenizer stringToken = new StringTokenizer(data, ",");
+
+            if (deleteIndex == index) {
+                greenColor("\nData yang akan dihapus adalah");
+                System.out.printf("%n%-30s%-20s%s%n", "TODO LIST", "STATUS", "DATE CREATED");
+                System.out.printf("%s%n", "--------------------------------------------------------------------------");
+                System.out.printf("[%d] ", index);
+                System.out.printf("%-25s", stringToken.nextToken());
+                System.out.printf("%-17s", stringToken.nextToken());
+                System.out.printf("%s%n", stringToken.nextToken());
+                System.out.printf("%s%n", "--------------------------------------------------------------------------");
+
+                isDelete = yesOrNo("Apakah anda yakin ingin menghapus ? (y/n) : ");
+                isFound = true;
+            }
+
+            if (isDelete) {
+                greenColor("Data berhasil dihapus");
+            } else {
+                bufferedOutput.write(data);
+                bufferedOutput.newLine();
+            }
+
+            data = bufferedInput.readLine();
+        }
+
+        if (!isFound) {
+            redColor("Data tidak ditemukan");
+        }
+
+        bufferedOutput.flush();
+
+        bufferedOutput.close();
+        fileOutput.close();
+        bufferedInput.close();
+        fileInput.close();
+
+        System.gc();
+
+        todo.delete();
+        temp.renameTo(todo);
     }
 
     static boolean yesOrNo(String message) {
@@ -166,5 +233,9 @@ public class Main {
 
     static void redColor(String message) {
         System.out.println(ANSI_RED + message + ANSI_WHITE);
+    }
+
+    static void greenColor(String message) {
+        System.out.println(ANSI_GREEN + message + ANSI_WHITE);
     }
 }
