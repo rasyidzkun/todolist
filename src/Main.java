@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
+import javax.xml.transform.Source;
+
 public class Main {
     static Scanner input = new Scanner(System.in);
     static String userInput;
@@ -22,6 +24,10 @@ public class Main {
 
         while (continueLoop) {
             clearScreen();
+
+            redColor("Jika gagal dalam menjalankan beberapa perintah, recompile file Main.java\n");
+            // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6213298
+            // https://coderanch.com/t/595269/java/doesn-File-renameTo-work
 
             System.out.println("=== TODO LIST APP ===");
             System.out.println("[1] Lihat Todo List");
@@ -98,13 +104,15 @@ public class Main {
         BufferedWriter bufferedOutput = new BufferedWriter(fileOutput);
 
         System.out.println("Apa yang ingin kamu kerjakan?");
-        System.out.print("Jawab : ");
-        String todo = input.next();
+        System.out.print("Jawab\t\t\t: ");
+
+        input.skip("[\r\n]+");
+        String todo = input.nextLine();
 
         String date = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a").format(new Date());
         String colorDate = ANSI_GREEN + date + ANSI_WHITE;
 
-        System.out.print("Completed (y/n) ? : ");
+        System.out.print("Completed (y/n) ?\t: ");
         String completed = input.next();
 
         String isCompleted = "";
@@ -130,7 +138,109 @@ public class Main {
         bufferedOutput.flush();
     }
 
-    static void editTodoList() {
+    static void editTodoList() throws IOException {
+        File todo = new File("todolist.txt");
+        FileReader fileInput = new FileReader(todo);
+        BufferedReader bufferedInput = new BufferedReader(fileInput);
+
+        File temp = new File("tempTodo.txt");
+        FileWriter fileOutput = new FileWriter(temp);
+        BufferedWriter bufferedOutput = new BufferedWriter(fileOutput);
+
+        showTodoList();
+
+        System.out.println("Masukkan index yang akan diubah");
+        System.out.print("Jawab : ");
+        int editIndex = input.nextInt();
+
+        String date = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a").format(new Date());
+        String colorDate = ANSI_GREEN + date + ANSI_WHITE;
+
+        int index = 0;
+
+        String data = bufferedInput.readLine();
+
+        while (data != null) {
+            index++;
+
+            StringTokenizer stringToken = new StringTokenizer(data, ",");
+
+            if (editIndex == index) {
+                clearScreen();
+                greenColor("\nData yang akan diubah adalah");
+                System.out.printf("%n%-30s%-20s%s%n", "TODO LIST", "STATUS", "DATE CREATED");
+                System.out.printf("%s%n", "--------------------------------------------------------------------------");
+                System.out.printf("[%d] ", index);
+                System.out.printf("%-25s", stringToken.nextToken());
+                System.out.printf("%-17s", stringToken.nextToken());
+                System.out.printf("%s%n", stringToken.nextToken());
+                System.out.printf("%s%n", "--------------------------------------------------------------------------");
+
+                String[] fieldData = { "TODO", "STATUS" };
+                String[] tempData = new String[2];
+
+                stringToken = new StringTokenizer(data, ",");
+
+                boolean isUpdate = yesOrNo("Apakah anda ingin merubah " + fieldData[0] + " (y/n) ?\t: ");
+                String originalData = stringToken.nextToken();
+
+                if (isUpdate) {
+                    System.out.print("Masukkan " + fieldData[0] + " baru\t\t\t: ");
+                    input.skip("[\r\n]+");
+                    tempData[0] = input.nextLine();
+                } else {
+                    tempData[0] = originalData;
+                }
+
+                isUpdate = yesOrNo("Apakah anda ingin merubah " + fieldData[1] + " (y/n) ?: ");
+                originalData = stringToken.nextToken();
+
+                if (isUpdate) {
+                    System.out.print("Completed (y/n) ?\t\t\t: ");
+                    tempData[1] = input.next();
+
+                    while (!tempData[1].equalsIgnoreCase("y") && !tempData[1].equalsIgnoreCase("n")) {
+                        redColor("Masukkan (y/n) ");
+                        System.out.print("Completed (y/n) ?\t\t\t: ");
+                        tempData[1] = input.next();
+                    }
+
+                    if (tempData[1].equalsIgnoreCase("y")) {
+                        tempData[1] = "completed";
+                    } else {
+                        tempData[1] = "not completed";
+                    }
+
+                } else {
+                    tempData[1] = originalData;
+                }
+
+                String TODO = tempData[0];
+                String STATUS = tempData[1];
+
+                bufferedOutput.write(TODO + "," + STATUS + "," + colorDate);
+
+            } else {
+                redColor("Anda memasukkan index yang salah");
+
+                bufferedOutput.write(data);
+            }
+
+            bufferedOutput.newLine();
+
+            data = bufferedInput.readLine();
+        }
+        bufferedOutput.flush();
+
+        bufferedOutput.close();
+        fileOutput.close();
+        bufferedInput.close();
+        fileInput.close();
+
+        System.gc();
+
+        todo.delete();
+        temp.renameTo(todo);
     }
 
     static void deleteTodoList() throws IOException {
@@ -160,6 +270,7 @@ public class Main {
             StringTokenizer stringToken = new StringTokenizer(data, ",");
 
             if (deleteIndex == index) {
+                clearScreen();
                 greenColor("\nData yang akan dihapus adalah");
                 System.out.printf("%n%-30s%-20s%s%n", "TODO LIST", "STATUS", "DATE CREATED");
                 System.out.printf("%s%n", "--------------------------------------------------------------------------");
@@ -169,7 +280,7 @@ public class Main {
                 System.out.printf("%s%n", stringToken.nextToken());
                 System.out.printf("%s%n", "--------------------------------------------------------------------------");
 
-                isDelete = yesOrNo("Apakah anda yakin ingin menghapus ? (y/n) : ");
+                isDelete = yesOrNo("Apakah anda yakin ingin menghapus (y/n) ? : ");
                 isFound = true;
             }
 
